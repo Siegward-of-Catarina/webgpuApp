@@ -10,17 +10,18 @@ const grouped_hex_step: HTMLElement = document.getElementById("hexadecimal-group
 const hex_output: HTMLElement = document.getElementById("hexadecimal") as HTMLElement;
 
 const click: () => void = () => {
+
   const binary: String = dec_to_binary(Number(decimal_input.value));
-  binary_step.innerText = "binary: " + binary;
+  binary_step.innerText = "binary: " + binary.valueOf();
 
   var tempStr: String = "grouped: ";
-  const grouped_binary: String[] = group_binary(binary);
-  for (let i: number = 0; i < grouped_binary.length; i++) {
+  const grouped_binary = group_binary(binary);
+  for (let i = 0; i < grouped_binary.length; i++) {
     tempStr += grouped_binary[i] + " ";
   }
   grouped_binary_step.innerText = tempStr.valueOf();
 
-  tempStr = "hex(grouped): ";
+  tempStr = "hex (grouped): ";
   for (let i: number = 0; i < grouped_binary.length; i++) {
     tempStr += String(binary_to_hex(grouped_binary[i])) + " ";
   }
