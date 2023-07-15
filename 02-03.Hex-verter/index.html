@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Hex-verter</h1>
+    <div class="input">
+      <label for="decimal">decimal: </label>
+      <input type="text" id="decimalInput" class="decimal">
+      <input type="submit" value="convert to hexadecimal" id="convert-button" class="decimal">
+    </div>
+    <div class="intermediate">
+      <p id="binary-raw">binary: </p>
+    </div>
+    <div class="intermediate">
+      <p id="binary-grouped">grouped: </p>
+    </div>
+    <div class="intermediate">
+      <p id="hexadecimal-grouped">hex(grouped): </p>
+    </div>
+    <div class="output">
+      <p id="hexadecimal">final: </p>
+    </div>
+  </div>
+  <script src="dist/main.js"></script>
+</body>
+
+</html>
