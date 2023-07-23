@@ -1,5 +1,4 @@
 import shader from "./shaders/shaders.wgsl";
-import TriangleMesh from "./TriangleMesh.ts";
 import { TriangleMesh } from "./triangle_mesh";
 const Initialize = async () => {
   const canvas: HTMLCanvasElement = document.getElementById(
@@ -33,15 +32,18 @@ const Initialize = async () => {
     bindGroupLayouts: [bindGroupLayout],
   });
 
-  //const module: GPUShaderModule = device.createShaderModule({ code: shader });
+  const shaderModule: GPUShaderModule = device.createShaderModule({
+    code: shader,
+  });
   const pipeline = device.createRenderPipeline({
     vertex: {
-      module: device.createShaderModule({ code: shader }),
+      module: shaderModule,
       entryPoint: "vs_main",
+      buffers: [triangleMesh.bufferLayout],
     },
 
     fragment: {
-      module: device.createShaderModule({ code: shader }),
+      module: shaderModule,
       entryPoint: "fs_main",
       targets: [{ format: format }],
     },
@@ -68,6 +70,7 @@ const Initialize = async () => {
 
   renderpass.setPipeline(pipeline);
   renderpass.setBindGroup(0, bindGroup);
+  renderpass.setVertexBuffer(0, triangleMesh.buffer);
   renderpass.draw(3, 1, 0, 0);
   renderpass.end();
 
