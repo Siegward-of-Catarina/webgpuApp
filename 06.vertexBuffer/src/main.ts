@@ -1,5 +1,6 @@
-import shader from "./shaders/shaders.wgsl";
 import { TriangleMesh } from "./triangle_mesh";
+import { VertColorShader } from "./vertColorShader";
+import { SquareMesh } from "./square_mesh";
 const Initialize = async () => {
   const canvas: HTMLCanvasElement = document.getElementById(
     "gfx-main"
@@ -17,43 +18,9 @@ const Initialize = async () => {
     alphaMode: "opaque",
   });
 
-  const triangleMesh: TriangleMesh = new TriangleMesh(device);
-
-  const bindGroupLayout = device.createBindGroupLayout({
-    entries: [],
-  });
-
-  const bindGroup = device.createBindGroup({
-    layout: bindGroupLayout,
-    entries: [],
-  });
-
-  const pipelineLayout = device.createPipelineLayout({
-    bindGroupLayouts: [bindGroupLayout],
-  });
-
-  const shaderModule: GPUShaderModule = device.createShaderModule({
-    code: shader,
-  });
-  const pipeline = device.createRenderPipeline({
-    vertex: {
-      module: shaderModule,
-      entryPoint: "vs_main",
-      buffers: [triangleMesh.bufferLayout],
-    },
-
-    fragment: {
-      module: shaderModule,
-      entryPoint: "fs_main",
-      targets: [{ format: format }],
-    },
-
-    primitive: {
-      topology: "triangle-list",
-    },
-
-    layout: pipelineLayout,
-  });
+  const mesh: SquareMesh = new SquareMesh(device);
+  const shader: VertColorShader = new VertColorShader(device, format);
+  //------------------------------
 
   const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
   const textureView: GPUTextureView = context.getCurrentTexture().createView();
@@ -68,10 +35,10 @@ const Initialize = async () => {
     ],
   });
 
-  renderpass.setPipeline(pipeline);
-  renderpass.setBindGroup(0, bindGroup);
-  renderpass.setVertexBuffer(0, triangleMesh.buffer);
-  renderpass.draw(3, 1, 0, 0);
+  renderpass.setPipeline(shader.pipeline);
+  renderpass.setBindGroup(0, shader.bindGroup);
+  renderpass.setVertexBuffer(0, mesh.GPUBuffer());
+  renderpass.draw(6, 2, 0, 0);
   renderpass.end();
 
   device.queue.submit([commandEncoder.finish()]);
