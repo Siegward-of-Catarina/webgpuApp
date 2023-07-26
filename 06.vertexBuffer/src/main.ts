@@ -24,21 +24,22 @@ const Initialize = async () => {
 
   const commandEncoder: GPUCommandEncoder = device.createCommandEncoder();
   const textureView: GPUTextureView = context.getCurrentTexture().createView();
+  const colorAttachment: GPURenderPassColorAttachment = {
+    view: textureView,
+    clearValue: [0.5, 0.0, 0.25, 1.0],
+    loadOp: "clear",
+    storeOp: "store",
+  };
+
   const renderpass: GPURenderPassEncoder = commandEncoder.beginRenderPass({
-    colorAttachments: [
-      {
-        view: textureView,
-        clearValue: [0.5, 0.0, 0.25, 1.0],
-        loadOp: "clear",
-        storeOp: "store",
-      },
-    ],
+    colorAttachments: [colorAttachment],
   });
 
   renderpass.setPipeline(shader.pipeline);
   renderpass.setBindGroup(0, shader.bindGroup);
-  renderpass.setVertexBuffer(0, mesh.GPUBuffer());
-  renderpass.draw(6, 2, 0, 0);
+  renderpass.setVertexBuffer(0, mesh.getVertexBuffer());
+  renderpass.setIndexBuffer(mesh.getIndexBuffer(), mesh.indexFormat);
+  renderpass.drawIndexed(mesh.indexCount);
   renderpass.end();
 
   device.queue.submit([commandEncoder.finish()]);
