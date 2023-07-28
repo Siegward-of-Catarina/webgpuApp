@@ -1,0 +1,25 @@
+{
+  "name": "hex-verter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run install-missing-dependencies && npm run build && npm run serve",
+    "install-missing-dependencies": "npm i",
+    "build": "webpack --config webpack.config.js",
+    "serve": "http-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^20.4.2",
+    "@webgpu/types": "^0.1.34",
+    "http-server": "^14.1.1",
+    "ts-loader": "^9.4.4",
+    "ts-shader-loader": "^2.0.2",
+    "typescript": "^4.6.4",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4"
+  }
+}
