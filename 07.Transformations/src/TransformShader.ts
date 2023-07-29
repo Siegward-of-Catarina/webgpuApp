@@ -1,7 +1,7 @@
 import { Shader } from "./base/shader_base";
-import shader from "./shaders/shaders.wgsl";
+import shader from "./shaders/transformShaders.wgsl";
 
-export class VertColorShader extends Shader {
+export class TransformShader extends Shader {
   constructor(device: GPUDevice) {
     super();
 

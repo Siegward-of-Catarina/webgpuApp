@@ -43,6 +43,8 @@ const Initialize = async () => {
   renderpass.end();
 
   device.queue.submit([commandEncoder.finish()]);
+
+  console.log(device);
 };
 
 Initialize();
