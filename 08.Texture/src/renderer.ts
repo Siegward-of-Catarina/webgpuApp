@@ -6,6 +6,7 @@ import { VertColorShader } from "./vertColorShader";
 import { TransformShader } from "./TransformShader";
 import { NullCheck } from './common';
 import { mat4 } from "gl-matrix";
+import { Material } from './material';
 
 export class Renderer {
   canvas: HTMLCanvasElement;
@@ -22,7 +23,8 @@ export class Renderer {
   pipeline: GPURenderPipeline | null;
 
   //Assets
-  mesh: Mesh | null
+  mesh: Mesh | null;
+  material: Material | null;
   shader: Shader | null;
   time: number;
   constructor(canvas: HTMLCanvasElement) {
@@ -35,6 +37,7 @@ export class Renderer {
     this.bindGroup = null;
     this.pipeline = null;
     this.mesh = null;
+    this.material = null;
     this.shader = null;
 
     this.time = 0.0;
@@ -44,7 +47,7 @@ export class Renderer {
     //device & context
     await this.setupDevice();
 
-    this.createAssets();
+    await this.createAssets();
 
     await this.makePipeline();
     //render
@@ -71,8 +74,10 @@ export class Renderer {
     });
   }
 
-  createAssets = () => {
+  createAssets = async () => {
     this.mesh = new SquareMesh(this.device!);
+    this.material = new Material();
+    await this.material.initialize(this.device!, "dist/img/sacabambaspis.png");
     this.shader = new TransformShader(this.device!);
   }
 
