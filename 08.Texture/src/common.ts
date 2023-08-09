@@ -3,6 +3,6 @@ export const NullCheck = (obj: any) => {
     throw Error(obj + "is null");
   }
   else {
-    console.log("success");
+    //console.log("success");
   }
 }
