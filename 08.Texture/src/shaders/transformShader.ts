@@ -1,5 +1,5 @@
-import { Shader } from "./base/shader_base";
-import shader from "./shaders/transformShaders.wgsl";
+import { Shader } from "../base/shader_base";
+import shader from "../shaderSource/transformShaders.wgsl";
 
 export class TransformShader extends Shader {
   constructor(device: GPUDevice) {

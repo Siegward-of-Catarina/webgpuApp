@@ -1,7 +1,7 @@
-import { Shader } from "./base/shader_base";
-import shader from "./shaders/shaders.wgsl";
+import { Shader } from "../base/shader_base";
+import shader from "../shaderSource/textureShaders.wgsl";
 
-export class VertColorShader extends Shader {
+export class TextureShader extends Shader {
   constructor(device: GPUDevice) {
     super();
 
@@ -10,7 +10,7 @@ export class VertColorShader extends Shader {
     });
 
     this._bufferLayout = {
-      arrayStride: 24,
+      arrayStride: 20,
       attributes: [
         {
           shaderLocation: 0,
@@ -19,7 +19,7 @@ export class VertColorShader extends Shader {
         },
         {
           shaderLocation: 1,
-          format: "float32x3",
+          format: "float32x2",
           offset: 12,
         },
       ],

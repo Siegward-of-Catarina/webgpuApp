@@ -2,11 +2,12 @@ import { Mesh } from "./base/mesh_base";
 import { Shader } from "./base/shader_base";
 import { TriangleMesh } from "./triangle_mesh";
 import { SquareMesh } from "./square_mesh";
-import { VertColorShader } from "./vertColorShader";
-import { TransformShader } from "./TransformShader";
-import { NullCheck } from './common';
+import { VertColorShader } from "./shaders/vertColorShader";
+import { TransformShader } from "./shaders/transformShader";
+import { TextureShader } from "./shaders/textureShader";
 import { mat4 } from "gl-matrix";
 import { Material } from './material';
+import { NullCheck } from "./common";
 
 export class Renderer {
   canvas: HTMLCanvasElement;
@@ -78,7 +79,7 @@ export class Renderer {
     this.mesh = new SquareMesh(this.device!);
     this.material = new Material();
     await this.material.initialize(this.device!, "dist/img/sacabambaspis.png");
-    this.shader = new TransformShader(this.device!);
+    this.shader = new TextureShader(this.device!);
   }
 
   makePipeline = async () => {
@@ -94,6 +95,16 @@ export class Renderer {
           binding: 0,
           visibility: GPUShaderStage.VERTEX,
           buffer: {},
+        },
+        {
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {},
+        },
+        {
+          binding: 2,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: {},
         }
       ],
     });
@@ -106,6 +117,14 @@ export class Renderer {
           resource: {
             buffer: this.uniformBuffer,
           },
+        },
+        {
+          binding: 1,
+          resource: this.material!.view!,
+        },
+        {
+          binding: 2,
+          resource: this.material!.sampler!,
         }
       ],
     });
@@ -125,7 +144,21 @@ export class Renderer {
       fragment: {
         module: this.shader!.module,
         entryPoint: this.shader!.entryPoint.Fragment,
-        targets: [{ format: this.format! }],
+        targets: [{ 
+          format: this.format!,
+          blend:{
+            color:{
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add",
+            },
+            alpha:{
+              srcFactor: "one",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add",
+            }
+          }
+        }],
       },
 
       primitive: {
@@ -151,8 +184,9 @@ export class Renderer {
 
     const model = mat4.create();
     //multiply
-    mat4.translate(model, model, [Math.sin(this.time), 0, 0]);
-    mat4.rotate(model, model, this.time, [0, 1, 0]);
+    mat4.translate(model, model, [Math.sin(this.time), Math.sin(this.time*2)*0.25, 0]);
+    var t = Math.sin(this.time/1.9)*0.5+0.5;
+    mat4.rotate(model, model, t * 6.28, [0, 1, 0]);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 0, <ArrayBuffer>model);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 64, <ArrayBuffer>view);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 128, <ArrayBuffer>projection);
