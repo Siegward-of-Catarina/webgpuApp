@@ -28,6 +28,8 @@ export class Renderer {
   material: Material | null;
   shader: Shader | null;
   time: number;
+  lastLoop:number;
+  deltaTime: number;
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.adapter = null;
@@ -42,6 +44,8 @@ export class Renderer {
     this.shader = null;
 
     this.time = 0.0;
+    this.lastLoop = Date.now();
+    this.deltaTime = Date.now();
   }
 
   Initialize = async () => {
@@ -185,8 +189,8 @@ export class Renderer {
     const model = mat4.create();
     //multiply
     mat4.translate(model, model, [Math.sin(this.time), Math.sin(this.time*2)*0.25, 0]);
-    var t = Math.sin(this.time/1.9)*0.5+0.5;
-    mat4.rotate(model, model, t * 6.28, [0, 1, 0]);
+    const rt = Math.sin(this.time/1.9)*0.5+0.5;
+    mat4.rotate(model, model, rt * 6.28, [0, 1, 0]);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 0, <ArrayBuffer>model);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 64, <ArrayBuffer>view);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 128, <ArrayBuffer>projection);
@@ -218,7 +222,10 @@ export class Renderer {
     this.device!.queue.submit([commandEncoder.finish()]);
 
     //================ render loop ==================
-    this.time += 0.01;
+    var now: number = Date.now();
+    this.deltaTime = now - this.lastLoop;
+    this.lastLoop = now;
+    this.time += 0.001 * this.deltaTime;
     if (this.time > 2.0 * Math.PI) {
       this.time -= 2.0 * Math.PI;
     }
