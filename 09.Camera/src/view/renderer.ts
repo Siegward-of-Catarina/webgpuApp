@@ -75,7 +75,7 @@ export class Renderer {
   createAssets = async () => {
     this.mesh = new SquareMesh(this.device!);
     this.material = new Material();
-    await this.material.initialize(this.device!, "dist/img/sacabambaspis.png");
+    await this.material.initialize(this.device!, "dist/img/fugu.png");
     this.shader = new TextureShader(this.device!);
   }
 
