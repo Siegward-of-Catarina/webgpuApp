@@ -20,8 +20,8 @@ export class App{
         this.scene = new Scene();
 
         this.keyLabel = <HTMLElement>document.getElementById("key-label");
-        $(document).on("keydown", (event) => {this.handle_keypress(event)});
         $(document).on("keyup", (event) => {this.handle_keyrelease(event)});
+        $(document).on("keydown", (event) => {this.handle_keypress(event)});
 
         this.mouseXLabel = <HTMLElement>document.getElementById("mouse-x-label");
         this.mouseYLabel = <HTMLElement>document.getElementById("mouse-y-label");
@@ -47,7 +47,6 @@ export class App{
 
         this.scene.update();
         this.scene.move_player(this.forwards_amount, this.right_amount);
-        
         this.renderer.render(
             this.scene.player,
             this.scene.triangles
@@ -96,6 +95,6 @@ export class App{
     handle_mouse_move = (event: MouseEvent) =>{
         this.mouseXLabel.innerText = event.clientX.toString();
         this.mouseYLabel.innerText = event.clientY.toString();
-        //this.scene.spin_player(event.movementX / 5, -(event.movementY) / 10);
+        this.scene.spin_player(event.movementX / 5, event.movementY/ 10);
     }
 }
