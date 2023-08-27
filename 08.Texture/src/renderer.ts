@@ -5,11 +5,23 @@ import { SquareMesh } from "./square_mesh";
 import { VertColorShader } from "./shaders/vertColorShader";
 import { TransformShader } from "./shaders/transformShader";
 import { TextureShader } from "./shaders/textureShader";
-import { mat4 } from "gl-matrix";
+import { mat4, vec2 } from "gl-matrix";
 import { Material } from './material';
 import { NullCheck } from "./common";
+import { Sprites } from "./sprites/sprites";
 
-export class Renderer {
+class ImageData
+{
+  posUV: vec2;
+  size: vec2;
+  constructor(pos: vec2)
+  {
+    this.posUV = pos;
+    this.size = [0.25, 0.25];
+  }
+}
+export class Renderer
+{
   canvas: HTMLCanvasElement;
 
   //GPU
@@ -25,12 +37,18 @@ export class Renderer {
 
   //Assets
   mesh: Mesh | null;
+  mesh2: Mesh | null;
+  sprites: Sprites | null;
   material: Material | null;
   shader: Shader | null;
   time: number;
-  lastLoop:number;
+  lastLoop: number;
   deltaTime: number;
-  constructor(canvas: HTMLCanvasElement) {
+  frame: number;
+  imageData: ImageData[];
+  numImage: number;
+  constructor(canvas: HTMLCanvasElement)
+  {
     this.canvas = canvas;
     this.adapter = null;
     this.device = null;
@@ -40,15 +58,22 @@ export class Renderer {
     this.bindGroup = null;
     this.pipeline = null;
     this.mesh = null;
+    this.mesh2 = null;
+    this.sprites = null;
     this.material = null;
     this.shader = null;
 
-    this.time = 0.0;
+    this.time = 0;
     this.lastLoop = Date.now();
-    this.deltaTime = Date.now();
+    this.deltaTime = 0;
+
+    this.frame = 0;
+    this.numImage = 4;
+    this.imageData = new Array(4);
   }
 
-  Initialize = async () => {
+  async Initialize()
+  {
     //device & context
     await this.setupDevice();
 
@@ -60,7 +85,8 @@ export class Renderer {
 
   }
 
-  setupDevice = async () => {
+  async setupDevice()
+  {
     this.adapter = (await navigator.gpu?.requestAdapter()) as GPUAdapter;
     NullCheck(this.adapter);
 
@@ -79,14 +105,25 @@ export class Renderer {
     });
   }
 
-  createAssets = async () => {
-    this.mesh = new SquareMesh(this.device!);
-    this.material = new Material();
-    await this.material.initialize(this.device!, "dist/img/sacabambaspis.png");
+  async createAssets()
+  {
+    const imgsize = 0.25;
+    this.mesh = new SquareMesh(this.device!, [0, 0], [imgsize, imgsize]);
+    this.mesh2 = new SquareMesh(this.device!, [imgsize, 0], [imgsize, imgsize]);
+
+    var chipW = 64 / 1024;
+    var chipH = 64 / 1024;
+    this.sprites = new Sprites([chipW, chipH], 256, 16, 16);
+    await this.sprites.createSprites(
+      this.device!,
+      "dist/img/ears.png",
+      [0, 0]);
+
     this.shader = new TextureShader(this.device!);
   }
 
-  makePipeline = async () => {
+  async makePipeline()
+  {
 
     this.uniformBuffer = this.device!.createBuffer({
       size: 64 * 3,
@@ -124,11 +161,11 @@ export class Renderer {
         },
         {
           binding: 1,
-          resource: this.material!.view!,
+          resource: this.sprites!.texture.view!,
         },
         {
           binding: 2,
-          resource: this.material!.sampler!,
+          resource: this.sprites!.texture.sampler!,
         }
       ],
     });
@@ -148,15 +185,15 @@ export class Renderer {
       fragment: {
         module: this.shader!.module,
         entryPoint: this.shader!.entryPoint.Fragment,
-        targets: [{ 
+        targets: [{
           format: this.format!,
-          blend:{
-            color:{
+          blend: {
+            color: {
               srcFactor: "src-alpha",
               dstFactor: "one-minus-src-alpha",
               operation: "add",
             },
-            alpha:{
+            alpha: {
               srcFactor: "one",
               dstFactor: "one-minus-src-alpha",
               operation: "add",
@@ -174,13 +211,15 @@ export class Renderer {
     NullCheck(this.pipeline);
   }
 
-  render = () => {
+  render = () =>
+  {
 
     //======== matrix =================================
     const projection = mat4.create();
+    const aspect: number = (this.canvas.width / this.canvas.height);
     mat4.perspective(
       projection, (Math.PI / 4),
-      (this.canvas.width / this.canvas.height),
+      aspect,
       0.1, 10);
 
     const view = mat4.create();
@@ -188,9 +227,9 @@ export class Renderer {
 
     const model = mat4.create();
     //multiply
-    mat4.translate(model, model, [Math.sin(this.time), Math.sin(this.time*2)*0.25, 0]);
-    const rt = Math.sin(this.time/1.9)*0.5+0.5;
-    mat4.rotate(model, model, rt * 6.28, [0, 1, 0]);
+    //mat4.translate(model, model, [Math.sin(this.time), Math.sin(this.time * 2) * 0.25, 0]);
+    const rt = Math.sin(this.time / 1.9) * 0.5 + 0.5;
+    // mat4.rotate(model, model, rt * 6.28, [0, 1, 0]);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 0, <ArrayBuffer>model);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 64, <ArrayBuffer>view);
     this.device!.queue.writeBuffer(this.uniformBuffer!, 128, <ArrayBuffer>projection);
@@ -214,7 +253,11 @@ export class Renderer {
 
     renderpass.setPipeline(this.pipeline!);
     renderpass.setBindGroup(0, this.bindGroup!);
-    renderpass.setVertexBuffer(0, this.mesh!.vertexBuffer);
+
+    //this.frame = Math.floor(Math.floor(this.time * 100) / this.sprites!.playTime[this.frame] % this.sprites!.num);
+    //console.log("frame: " + this.sprites!.frame[this.frame]);
+    this.sprites!.animStart(this.deltaTime);
+    renderpass.setVertexBuffer(0, this.sprites!.currentBuffer);
     renderpass.setIndexBuffer(this.mesh!.indexBuffer, this.mesh!.indexFormat);
     renderpass.drawIndexed(this.mesh!.indexCount);
     renderpass.end();
@@ -223,11 +266,12 @@ export class Renderer {
 
     //================ render loop ==================
     var now: number = Date.now();
-    this.deltaTime = now - this.lastLoop;
+    if (now - this.lastLoop < 100) this.deltaTime = now - this.lastLoop;
     this.lastLoop = now;
     this.time += 0.001 * this.deltaTime;
-    if (this.time > 2.0 * Math.PI) {
-      this.time -= 2.0 * Math.PI;
+    if (this.time > 2.0 * Math.PI)
+    {
+      //this.time -= 2.0 * Math.PI;
     }
     requestAnimationFrame(this.render);
     //===============================================

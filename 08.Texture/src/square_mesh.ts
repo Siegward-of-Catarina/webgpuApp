@@ -1,15 +1,18 @@
 import { IndexBuffer } from "./indexBuffer";
 import { VertexBuffer } from "./vertexBuffer";
 import { Mesh } from "./base/mesh_base";
-export class SquareMesh extends Mesh {
-  constructor(device: GPUDevice) {
+import { vec2 } from "gl-matrix";
+export class SquareMesh extends Mesh
+{
+  constructor(device: GPUDevice, origin: vec2, size: vec2)
+  {
     super();
     // x y z u v
-    const vertices: Float32Array = new Float32Array([
-      -0.5, 0.5, 0.0, 0.0, 0.0,
-      -0.5, -0.5, 0.0, 0.0, 1.0,
-      0.5, 0.5, 0.0, 1.0, 0.0,
-      0.5, -0.5, 0.0, 1.0, 1.0,
+    const vertices = new Float32Array([
+      -0.5, 0.5, 0.0, origin[0], origin[1],
+      -0.5, -0.5, 0.0, origin[0], origin[1] + size[1],
+      0.5, 0.5, 0.0, origin[0] + size[0], origin[1],
+      0.5, -0.5, 0.0, origin[0] + size[0], origin[1] + size[1],
     ]);
     this._vertexBuffer = new VertexBuffer(device, vertices);
 

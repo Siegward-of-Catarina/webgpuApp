@@ -1,11 +1,12 @@
 import { Renderer } from "./renderer";
-const Initialize = async () => {
-  const canvas: HTMLCanvasElement = document.getElementById(
+async function Initialize()
+{
+  const canvas: HTMLCanvasElement = await document.getElementById(
     "gfx-main"
   ) as HTMLCanvasElement;
 
   const renderer: Renderer = new Renderer(canvas);
-  renderer.Initialize();
+  await renderer.Initialize();
 };
 
 Initialize();

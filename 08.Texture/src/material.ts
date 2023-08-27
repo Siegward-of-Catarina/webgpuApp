@@ -1,22 +1,25 @@
 import { sources } from "webpack";
 import { NullCheck } from "./common";
 
-export class Material{
-    texture:GPUTexture|null;
-    view:GPUTextureView|null;
-    sampler:GPUSampler|null;
-    constructor(){
+export class Material
+{
+    texture: GPUTexture | null;
+    view: GPUTextureView | null;
+    sampler: GPUSampler | null;
+    constructor()
+    {
         this.texture = null;
         this.view = null;
         this.sampler = null;
     }
 
-    initialize = async (device:GPUDevice, url:string) => {
+    async initialize(device: GPUDevice, url: string)
+    {
 
         const response: Response = await fetch(url);
         //for binary
         const blob: Blob = await response.blob();
-        const imageData : ImageBitmap = await createImageBitmap(blob); 
+        const imageData: ImageBitmap = await createImageBitmap(blob);
 
         await this.loadImageBitmap(device, imageData);
 
@@ -24,17 +27,17 @@ export class Material{
         const viewDescriptor: GPUTextureViewDescriptor = {
             format: "bgra8unorm",
             dimension: "2d",
-            aspect:"all",
-            baseMipLevel:0,
-            mipLevelCount:1,
-            baseArrayLayer:0,
-            arrayLayerCount:1
+            aspect: "all",
+            baseMipLevel: 0,
+            mipLevelCount: 1,
+            baseArrayLayer: 0,
+            arrayLayerCount: 1
         };
 
         this.view = this.texture!.createView(viewDescriptor);
 
         //sampler
-        const samplerDescriptor: GPUSamplerDescriptor ={
+        const samplerDescriptor: GPUSamplerDescriptor = {
             addressModeU: "repeat",
             addressModeW: "repeat",
             magFilter: "linear",
@@ -46,9 +49,10 @@ export class Material{
         this.sampler = device.createSampler(samplerDescriptor);
     }
 
-    loadImageBitmap = async (device:GPUDevice, imageData:ImageBitmap) =>{
-        const textureDescriptor:GPUTextureDescriptor ={
-            size:{
+    async loadImageBitmap(device: GPUDevice, imageData: ImageBitmap)
+    {
+        const textureDescriptor: GPUTextureDescriptor = {
+            size: {
                 width: imageData.width,
                 height: imageData.height
             },
@@ -60,8 +64,8 @@ export class Material{
         NullCheck(this.texture);
 
         device.queue.copyExternalImageToTexture(
-            {source:imageData},
-            {texture:this.texture},
+            { source: imageData },
+            { texture: this.texture },
             textureDescriptor.size
         );
     }
