@@ -1,0 +1,1 @@
+Youtubeチャンネル[GetIntoGameDev]より公開されている　WebGPU for Beginnersをもとに作成
